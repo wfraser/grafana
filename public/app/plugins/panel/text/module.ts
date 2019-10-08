@@ -78,19 +78,23 @@ export class TextPanelCtrl extends PanelCtrl {
 
   renderText(content: string) {
     const safeContent = escapeHtml(content).replace(/\n/g, '<br/>');
-    this.updateContent(safeContent);
+    this.updateContentRaw(safeContent);
   }
 
   renderMarkdown(content: string) {
     this.$scope.$applyAsync(() => {
-      this.updateContent(renderMarkdown(content));
+      this.updateContentRaw(renderMarkdown(this.templateSrv.replace(content, this.panel.scopedVars)));
     });
   }
 
   updateContent(html: string) {
+    this.updateContentRaw(this.templateSrv.replace(html, this.panel.scopedVars));
+  }
+
+  updateContentRaw(html: string) {
     html = config.disableSanitizeHtml ? html : sanitize(html);
     try {
-      this.content = this.$sce.trustAsHtml(this.templateSrv.replace(html, this.panel.scopedVars));
+      this.content = this.$sce.trustAsHtml(html);
     } catch (e) {
       console.log('Text panel error: ', e);
       this.content = this.$sce.trustAsHtml(html);
